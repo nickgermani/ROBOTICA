@@ -1,0 +1,90 @@
+APAGAR DEPOS
+
+Substituir Seu_SSID e Sua_Senha pelas credenciais da sua rede Wi-Fi e IP também.
+Conectar o hardware: Conecte o ESP8266, o LED e o resistor de acordo com o diagrama.
+Carregar o código: Copie e cole o código completo no Arduino IDE e carregue-o para o seu ESP8266.
+Acessar a interface web: Abra um navegador e digite o endereço IP do seu ESP8266 na barra de endereço. 
+Você encontrará a interface web com o botão para controlar o LED.
+
+No código: O IP do seu roteador (gateway) não é inserido 
+]diretamente no código do ESP8266 para se conectar à rede Wi-Fi. 
+Você precisa inserir o SSID (nome da sua rede) e a senha. 
+O ESP8266 se encarrega de obter um IP automaticamente.
+
+
+#include <ESP8266WiFi.h>
+#include <ESP8266WebServer.h>
+
+// Substitua com suas credenciais de Wi-Fi
+const char* ssid = "Seu_SSID";
+const char* password = "Sua_Senha";
+
+const int ledPin = 2;
+const int serverPort = 80;
+
+ESP8266WebServer server(serverPort);
+
+// ... Seu código HTML ...
+
+void handleRoot() {
+  server.send(200, "text/html", html);
+}
+
+void handleButtonPress() {
+  // Inverte o estado do LED
+  digitalWrite(ledPin, !digitalRead(ledPin));
+  server.send(200, "text/plain", "LED alternado");
+}
+
+void setup() {
+  pinMode(ledPin, OUTPUT);
+
+  // Conecta à Wi-Fi
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.println("Wi-Fi conectado");
+  Serial.println("Endereço IP: ");
+  Serial.println(WiFi.localIP());
+
+  // Inicia o servidor web
+  server.on("/", handleRoot);
+  server.on("/button", handleButtonPress);
+  server.begin();
+}
+
+void loop() {
+  server.handleClient();
+}
+
+
+void handleButtonPress() {
+  // Toggle the LED state
+  digitalWrite(ledPin, !digitalRead(ledPin));
+  server.send(200, "text/plain", "LED toggled");
+}
+
+void setup() {
+  pinMode(ledPin, OUTPUT);
+
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  server.on("/", handleRoot);
+  server.on("/button", handleButtonPress);
+  server.begin();
+}
+
+void loop() {
+  server.handleClient();
+}
